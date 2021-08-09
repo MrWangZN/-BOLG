@@ -1,4 +1,4 @@
-/*
+package current;/*
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  *
  *
@@ -73,7 +73,7 @@ import jdk.internal.misc.Unsafe;
 /**
  * A hash table supporting full concurrency of retrievals and
  * high expected concurrency for updates. This class obeys the
- * same functional specification as {@link java.util.Hashtable}, and
+ * same functional specification as {@link Hashtable}, and
  * includes versions of methods corresponding to each method of
  * {@code Hashtable}. However, even though all operations are
  * thread-safe, retrieval operations do <em>not</em> entail locking,
@@ -87,7 +87,7 @@ import jdk.internal.misc.Unsafe;
  *
  *------------------------------------------------------------------------------
  * 这是一个支持并发检索并且高并发的更新操作的哈希表。这个类遵循了与
- * {@link java.util.Hashtable} 同样的功能规范，包括了{@code Hashtable}
+ * {@link Hashtable} 同样的功能规范，包括了{@code Hashtable}
  * 的各种方法。总而言之，即使所有的操作都是线程安全的，读操作不需要锁，而且没有
  * 任何操作来锁定整张表来控制访问。你只需要像操作{@code Hashtable}一样操作这个类。
  * ----->最后一句话说的就是自己的实现更好，并没有整个表都同步。
@@ -146,24 +146,28 @@ import jdk.internal.misc.Unsafe;
  * expected {@code concurrencyLevel} as an additional hint for
  * internal sizing.  Note that using many keys with exactly the same
  * {@code hashCode()} is a sure way to slow down performance of any
- * hash table. To ameliorate impact, when keys are {@link Comparable},
+ * hash table. To ameliorate impact, when keys are {@link  },
  * this class may use comparison order among keys to help break ties.
  * -----------------------------------------------------------------------------
  * 哈希表发生过多碰撞的时候会动态扩容（拥有不同hash值的keys却落到同一个位置），每次扩容至两倍，
  * 容量阈值系数是0.75。扩容经常发生添加和删除，但是总的来说维护了一个普遍可接受的时间\空间上的权衡。
  * 不管怎么说，重新定义这个hash表还是其他实现的hash表大小（扩容）都会是十分耗时的操作。如果
- * 可以预测使用空间，使用构造方法定义一个初始容量是非常好的选择。TODO An additional optional
- *
- *
- *
- *
- *
+ * 可以预测使用空间，使用构造方法定义一个初始容量是非常好的选择。另外一个可以选择的方式{@code loadFactor}
+ * 使用构造器构造参数的方式定制初始化table容量通过指定的 表的密度，以此来计算分配给表的元素的空间。
+ * （大概的意思就是我可以指定怎么样去扩容，loadFactor、initialCapacity(并不是初始tab的容量，是初始阈值扩容的容量)
+ * 同样为了兼容之前的版本，构造器可以自定义选择指定期望的{concurrencyLevel}值，作为一个额外的内部大小定义。
+ * 注意，需要相同keys使用一样的{@code hashCode()}(一样的hashcode值)会使任何的hash table性能快速下降。
+ * 为了减少影响，当keys如果是可以比较的话，这个类使用中比较指令键可以帮助断绝这种关系。 TODO Comparable
+ *-------------------------------------------------------------------------------
  * <p>A {@link Set} projection of a ConcurrentHashMap may be created
  * (using {@link #newKeySet()} or {@link #newKeySet(int)}), or viewed
  * (using {@link #keySet(Object)} when only keys are of interest, and the
  * mapped values are (perhaps transiently) not used or all take the
  * same mapping value.
+ * -----------------------------------------------------------------------------
  *
+ *
+ * -----------------------------------------------------------------------------
  * <p>A ConcurrentHashMap can be used as a scalable frequency map (a
  * form of histogram or multiset) by using {@link
  * java.util.concurrent.atomic.LongAdder} values and initializing via
@@ -177,7 +181,11 @@ import jdk.internal.misc.Unsafe;
  *
  * <p>Like {@link Hashtable} but unlike {@link HashMap}, this class
  * does <em>not</em> allow {@code null} to be used as a key or value.
+ * -----------------------------------------------------------------------------
  *
+ * 和hashtable一样，但是和Hashmap不同，这个类不允许使用null的key和value
+ *
+ * -----------------------------------------------------------------------------
  * <p>ConcurrentHashMaps support a set of sequential and parallel bulk
  * operations that, unlike most {@link Stream} methods, are designed
  * to be safely, and often sensibly, applied even with maps that are
@@ -192,7 +200,7 @@ import jdk.internal.misc.Unsafe;
  * ordering, or on any other objects or values that may transiently
  * change while computation is in progress; and except for forEach
  * actions, should ideally be side-effect-free. Bulk operations on
- * {@link Map.Entry} objects do not support method {@code setValue}.
+ * {@link Entry} objects do not support method {@code setValue}.
  *
  *
  *
@@ -675,7 +683,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * are special, and contain null keys and values (but are never
      * exported).  Otherwise, keys and vals are never null.
      */
-    static class Node<K,V> implements Map.Entry<K,V> {
+    static class Node<K,V> implements Entry<K,V> {
         final int hash;
         final K key;
         volatile V val;
@@ -703,9 +711,9 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         }
 
         public final boolean equals(Object o) {
-            Object k, v, u; Map.Entry<?,?> e;
+            Object k, v, u; Entry<?,?> e;
             return ((o instanceof Map.Entry) &&
-                    (k = (e = (Map.Entry<?,?>)o).getKey()) != null &&
+                    (k = (e = (Entry<?,?>)o).getKey()) != null &&
                     (v = e.getValue()) != null &&
                     (k == key || k.equals(key)) &&
                     (v == (u = val) || v.equals(u)));
@@ -785,6 +793,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     /**
      * Returns k.compareTo(x) if x matches kc (k's screened comparable
      * class), else 0.
+     * 返回k.compareTo(x)的值，如果可以比较（k是kc这个类，并且是comparable)
      */
     @SuppressWarnings({"rawtypes","unchecked"}) // for cast to Comparable
     static int compareComparables(Class<?> kc, Object k, Object x) {
@@ -938,6 +947,9 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @param concurrencyLevel the estimated number of concurrently
      * updating threads. The implementation may use this value as
      * a sizing hint.
+     * concurrencyLevel : 估计的并发线程数量，是以使用这个作为一个大小的提示。
+     *
+     *
      * @throws IllegalArgumentException if the initial capacity is
      * negative or the load factor or concurrencyLevel are
      * nonpositive
@@ -1105,9 +1117,11 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                                                 (ek != null && key.equals(ek)))) {
                                     oldVal = e.val;
                                     if (!onlyIfAbsent) //普通put方法 onlyIfAbsent = false 就会修改这个赋值，否则就是存在不能修改
-                                        e.val = value; //（onlyIfAbsent 为 false 可以覆盖 , true 只能是添加操作（不覆盖）
+                                        e.val = value; //（onlyIfAbsent 为 false 可以覆盖 , true 只能是添加操作（不覆盖） （见注释 TO|DO Comparable)
                                     break;
                                 }
+                                //在这里如果我们hashCode实现的差劲，都是相同的，他也是样比较key对象如果是原来的对象，或者认为是相等的就覆盖
+                                //不是的话就要继续遍历放在了最后。树的方式不一样，红黑树是平衡树，如果key是可以比较的话就比较
                                 Node<K,V> pred = e;
                                 if ((e = e.next) == null) {
                                     pred.next = new Node<K,V>(hash, key, value);
@@ -1152,7 +1166,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      */
     public void putAll(Map<? extends K, ? extends V> m) {
         tryPresize(m.size());
-        for (Map.Entry<? extends K, ? extends V> e : m.entrySet())
+        for (Entry<? extends K, ? extends V> e : m.entrySet())
             putVal(e.getKey(), e.getValue(), false);
     }
 
@@ -1347,7 +1361,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      *
      * @return the set view
      */
-    public Set<Map.Entry<K,V>> entrySet() {
+    public Set<Entry<K,V>> entrySet() {
         EntrySetView<K,V> es;
         if ((es = entrySet) != null) return es;
         return entrySet = new EntrySetView<K,V>(this);
@@ -1428,7 +1442,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                 if (v == null || (v != val && !v.equals(val)))
                     return false;
             }
-            for (Map.Entry<?,?> e : m.entrySet()) {
+            for (Entry<?,?> e : m.entrySet()) {
                 Object mk, mv, v;
                 if ((mk = e.getKey()) == null ||
                         (mv = e.getValue()) == null ||
@@ -1703,7 +1717,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
             for (Node<K,V> p; (p = it.advance()) != null; ) {
                 K k = p.key;
                 V v = p.val;
-                Map.Entry<K,V> e = new AbstractMap.SimpleImmutableEntry<>(k, v);
+                Entry<K,V> e = new SimpleImmutableEntry<>(k, v);
                 if (function.test(e) && replaceNode(k, null, v) != null)
                     removed = true;
             }
@@ -2183,7 +2197,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      *
      * <p>Note that this method is identical in functionality to
      * {@link #containsValue(Object)}, and exists solely to ensure
-     * full compatibility with class {@link java.util.Hashtable},
+     * full compatibility with class {@link Hashtable},
      * which supported this method prior to introduction of the
      * Java Collections Framework.
      *
@@ -2392,7 +2406,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
             CounterCell c; long v; int m;
             boolean uncontended = true;
             if (cs == null || (m = cs.length - 1) < 0 ||
-                    (c = cs[ThreadLocalRandom.getProbe() & m]) == null ||  //ThreadLocalRandom.getProbe()获得一个随机数字计算hash
+                    (c = cs[ThreadLocalRandom.getProbe() & m]) == null ||  //ThreadLocalRandom.getProbe()获得得到线程的探针哈希值计算hash
                     !(uncontended =
                             U.compareAndSetLong(c, CELLVALUE, v = c.value, v + x))) { //CAS怎见并判断是否发生竞争
                /*
@@ -2684,22 +2698,30 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     // See LongAdder version for explanation
     private final void fullAddCount(long x, boolean wasUncontended) {
         int h;
-        if ((h = ThreadLocalRandom.getProbe()) == 0) {
-            ThreadLocalRandom.localInit();      // force initialization
-            h = ThreadLocalRandom.getProbe();
-            wasUncontended = true;
+        //得到线程的探针哈希值。
+        // TODO ThreadLocalRandom.getProbe() 文章https://blog.csdn.net/L__ear/article/details/106528892
+        if ((h = ThreadLocalRandom.getProbe()) == 0) {  //线程类默认没有赋值Probe 因此默认为0
+            //fullAddCount 方法会调用 ThreadLocalRandom.localInit()
+            // 初始化当前线程的探针哈希值；
+            ThreadLocalRandom.localInit();      // force initialization 强制初始化
+            h = ThreadLocalRandom.getProbe();   // 初始化后在此获得
+//         其实这里判断的是进方法之前，有没有CAS过
+//         == 0说明没有初始化，说明进fullAddCount是因为counterCells为null
+//         != 0说明初始化过了，说明进fullAddCount之前已经走过getProbe()了，并且cas失败 ，wasUncontended = false
+            wasUncontended = true;              //设置没有竞争
         }
-        boolean collide = false;                // True if last slot nonempty
+        boolean collide = false;                // True if last slot nonempty  如果上次获得的槽不是空的就为true  同样标志是否能扩容 false就不会考虑扩容
         for (;;) {
             CounterCell[] cs; CounterCell c; int n; long v;
+            //如果有counterCells
             if ((cs = counterCells) != null && (n = cs.length) > 0) {
                 if ((c = cs[(n - 1) & h]) == null) {
-                    if (cellsBusy == 0) {            // Try to attach new Cell
-                        CounterCell r = new CounterCell(x); // Optimistic create
-                        if (cellsBusy == 0 &&
+                    if (cellsBusy == 0) {            // Try to attach new Cell    尝试增加一个Cell（并不是每次扩容后就会每一个位置都创建cell，用到才创建）
+                        CounterCell r = new CounterCell(x); // Optimistic create  乐观创建
+                        if (cellsBusy == 0 &&                                     //cas设置CELLSBUSY乐观锁
                                 U.compareAndSetInt(this, CELLSBUSY, 0, 1)) {
                             boolean created = false;
-                            try {               // Recheck under lock
+                            try {               // Recheck under lock  再次检查一次（双重检验，在加锁之前可能有人已经添加了）
                                 CounterCell[] rs; int m, j;
                                 if ((rs = counterCells) != null &&
                                         (m = rs.length) > 0 &&
@@ -2712,48 +2734,58 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                             }
                             if (created)
                                 break;
-                            continue;           // Slot is now non-empty
+                            continue;           // Slot is now non-empty 槽当前不是空的（有人在我加锁之前，添加了，我直接这一次循环）
                         }
                     }
-                    collide = false;
-                }
-                else if (!wasUncontended)       // CAS already known to fail
+                    collide = false;            //是否碰撞 collide（碰撞）
+                }                               // CAS 已经知道是失败了的
+                else if (!wasUncontended)       // CAS already known to fail  如果是初始化就本来就是false 如果初始化过就是false，然后第一次失败直接rehash
+                    //进到里面，说明之前在addCount已经CAS过了，并且失败了，还不能获得空的cell
+                    //第一次只把标志位改为true，改个状态出去，给个机会(看看能不能获得cell)，第二次再来CAS，避免竞争
                     wasUncontended = true;      // Continue after rehash
-                else if (U.compareAndSetLong(c, CELLVALUE, v = c.value, v + x))
-                    break;
-                else if (counterCells != cs || n >= NCPU)
-                    collide = false;            // At max size or stale
-                else if (!collide)
-                    collide = true;
+                else if (U.compareAndSetLong(c, CELLVALUE, v = c.value, v + x))  //wasUncontended == ture 才能进来
+                    break;                      //如果 CAS 一次成功的话就直接break退出循环 结束方法
+                else if (counterCells != cs || n >= NCPU)  //counterCells被修改了  ||n 大于 cpu数量
+                    collide = false;            // At max size or stale  重新进行循环，重新赋值cs，并且rehash
+                else if (!collide)              //没有
+                    //进到里面，说明需要扩容了
+                    //改个状态出去，给个机会（乐观-->获得不到空的cell，CAS还失败，并且再一次循环尝试还失败（乐观乐观）才扩容）
+                    collide = true;             //发生了碰撞 设置为true
+                //只有前面都false的时候才考虑扩容counterCells,除非不能扩容了 在collide == true(获得不到空的cell，CAS还失败，并且再一次循环尝试还失败（乐观乐观）)
                 else if (cellsBusy == 0 &&
                         U.compareAndSetInt(this, CELLSBUSY, 0, 1)) {
                     try {
                         if (counterCells == cs) // Expand table unless stale
+                            //扩容
                             counterCells = Arrays.copyOf(cs, n << 1);
                     } finally {
                         cellsBusy = 0;
                     }
-                    collide = false;
+                    collide = false;             //设置collide = false
+
                     continue;                   // Retry with expanded table
                 }
-                h = ThreadLocalRandom.advanceProbe(h);
+                //当发生线程争用后，也会调用ThreadLocalRandom.advanceProbe(h) 更改当前线程的探针哈希值，
+                h = ThreadLocalRandom.advanceProbe(h);     //发生竞争
             }
+            //如果cellsBusy == 0 （没有人初始化）并且 计数格子没有初始化，就初始化计数格子（counterCells）
             else if (cellsBusy == 0 && counterCells == cs &&
-                    U.compareAndSetInt(this, CELLSBUSY, 0, 1)) {
+                    U.compareAndSetInt(this, CELLSBUSY, 0, 1)) {  //自旋的设置CELLSBUSY，保证线程安全
                 boolean init = false;
                 try {                           // Initialize table
                     if (counterCells == cs) {
                         CounterCell[] rs = new CounterCell[2];
-                        rs[h & 1] = new CounterCell(x);
+                        rs[h & 1] = new CounterCell(x);  //把CounterCell.val(计数)设置为x
                         counterCells = rs;
                         init = true;
                     }
                 } finally {
-                    cellsBusy = 0;
+                    cellsBusy = 0;  //直接设置为0，counterCells只有我操作扩容，直接释放。可以多理解，帮助自己的juc方面思想。
                 }
-                if (init)
+                if (init)  //初始化完成退出
                     break;
             }
+            //有线程在初始化counterCells，那么我就cas一次直接添加BASECOUNT试试看，如果成功了就返回，否则就继续循环来一次
             else if (U.compareAndSetLong(this, BASECOUNT, v = baseCount, v + x))
                 break;                          // Fall back on using base
         }
@@ -2886,17 +2918,21 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
          * Tie-breaking utility for ordering insertions when equal
          * hashCodes and non-comparable. We don't require a total
          * order, just a consistent insertion rule to maintain
-         * equivalence across rebalancings. Tie-breaking further than
-         * necessary simplifies testing a bit.
+         * equivalence across rebalancings. Tie-breaking
+         * further than necessary simplifies testing a bit.
+         * -------------------------------------------------------------------------
+         * Tie-breaking（关系破坏程序）是为了能够插入，当有相同的hashcode而且是不可以比较的
+         * 我们不需要一个完全的order，只是有一个固定的插入规则去实现等价的再平衡。
+         * -------------------------------------------------------------------------
          */
         static int tieBreakOrder(Object a, Object b) {
             int d;
             if (a == null || b == null ||
                     (d = a.getClass().getName().
-                            compareTo(b.getClass().getName())) == 0)
+                            compareTo(b.getClass().getName())) == 0) //如果两个对象的类名一样
                 d = (System.identityHashCode(a) <= System.identityHashCode(b) ?
-                        -1 : 1);
-            return d;
+                        -1 : 1); //比较两个对象的原生hashCode，如果比b小等就-1，否则1
+            return d;  //返回d
         }
 
         /**
@@ -3021,39 +3057,41 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
 
         /**
          * Finds or adds a node.
-         * @return null if added
+         * @return null if added  如果添加上了返回null  如果是找到了要覆盖的结点，将这个树节点返回交给调用出更具逻辑是否覆盖val
          */
         final TreeNode<K,V> putTreeVal(int h, K k, V v) {
             Class<?> kc = null;
-            boolean searched = false;
-            for (TreeNode<K,V> p = root;;) {
+            boolean searched = false; //
+            for (TreeNode<K,V> p = root;;) {  //循环
                 int dir, ph; K pk;
                 if (p == null) {
                     first = root = new TreeNode<K,V>(h, k, v, null, null);
                     break;
                 }
-                else if ((ph = p.hash) > h)
+                else if ((ph = p.hash) > h)   //p结点(present)的hash更大，到左边去找令dir = -1;
                     dir = -1;
-                else if (ph < h)
+                else if (ph < h)              //p结点(present)的hash更小，到右边去找令dir =  1;
                     dir = 1;
                 else if ((pk = p.key) == k || (pk != null && k.equals(pk)))
-                    return p;
+                    return p;                 //如果是一个key，或者认为相同，放着这个节点
+                //如果不可以比较进入下面
                 else if ((kc == null &&
-                        (kc = comparableClassFor(k)) == null) ||
-                        (dir = compareComparables(kc, k, pk)) == 0) {
-                    if (!searched) {
+                        (kc = comparableClassFor(k)) == null) ||       //如果k实现了Comparable,返回kc类，否则null
+                        (dir = compareComparables(kc, k, pk)) == 0) {  //比较判断是否可以判断，如果可以判断返回判断结果，不可以返回0;
+                    if (!searched) {    // if  searched == false
                         TreeNode<K,V> q, ch;
                         searched = true;
                         if (((ch = p.left) != null &&
                                 (q = ch.findTreeNode(h, k, kc)) != null) ||
                                 ((ch = p.right) != null &&
                                         (q = ch.findTreeNode(h, k, kc)) != null))
-                            return q;
+                            return q;  //检索这个树，如果找到这个覆盖的返回
                     }
-                    dir = tieBreakOrder(k, pk);
+                    dir = tieBreakOrder(k, pk);  //比较k,和pk的原生hashCode,来获得dir(if k<=pk 是-1),如果两个不是一个类就返回0;
                 }
 
                 TreeNode<K,V> xp = p;
+                //通过最开始的循环，left或者right了树节点，直到找到了可以放置的位置
                 if ((p = (dir <= 0) ? p.left : p.right) == null) {
                     TreeNode<K,V> x, f = first;
                     first = x = new TreeNode<K,V>(h, k, v, f, xp);
@@ -3068,7 +3106,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                     else {
                         lockRoot();
                         try {
-                            root = balanceInsertion(root, x);
+                            root = balanceInsertion(root, x); //平衡红黑树
                         } finally {
                             unlockRoot();
                         }
@@ -3592,13 +3630,13 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     }
 
     static final class EntryIterator<K,V> extends BaseIterator<K,V>
-            implements Iterator<Map.Entry<K,V>> {
+            implements Iterator<Entry<K,V>> {
         EntryIterator(Node<K,V>[] tab, int size, int index, int limit,
                       ConcurrentHashMap<K,V> map) {
             super(tab, size, index, limit, map);
         }
 
-        public final Map.Entry<K,V> next() {
+        public final Entry<K,V> next() {
             Node<K,V> p;
             if ((p = next) == null)
                 throw new NoSuchElementException();
@@ -3613,7 +3651,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     /**
      * Exported Entry for EntryIterator.
      */
-    static final class MapEntry<K,V> implements Map.Entry<K,V> {
+    static final class MapEntry<K,V> implements Entry<K,V> {
         final K key; // non-null
         V val;       // non-null
         final ConcurrentHashMap<K,V> map;
@@ -3630,9 +3668,9 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         }
 
         public boolean equals(Object o) {
-            Object k, v; Map.Entry<?,?> e;
+            Object k, v; Entry<?,?> e;
             return ((o instanceof Map.Entry) &&
-                    (k = (e = (Map.Entry<?,?>)o).getKey()) != null &&
+                    (k = (e = (Entry<?,?>)o).getKey()) != null &&
                     (v = e.getValue()) != null &&
                     (k == key || k.equals(key)) &&
                     (v == val || v.equals(val)));
@@ -3733,7 +3771,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     }
 
     static final class EntrySpliterator<K,V> extends Traverser<K,V>
-            implements Spliterator<Map.Entry<K,V>> {
+            implements Spliterator<Entry<K,V>> {
         final ConcurrentHashMap<K,V> map; // To export MapEntry
         long est;               // size estimate
         EntrySpliterator(Node<K,V>[] tab, int size, int index, int limit,
@@ -3750,13 +3788,13 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                             f, est >>>= 1, map);
         }
 
-        public void forEachRemaining(Consumer<? super Map.Entry<K,V>> action) {
+        public void forEachRemaining(Consumer<? super Entry<K,V>> action) {
             if (action == null) throw new NullPointerException();
             for (Node<K,V> p; (p = advance()) != null; )
                 action.accept(new MapEntry<K,V>(p.key, p.val, map));
         }
 
-        public boolean tryAdvance(Consumer<? super Map.Entry<K,V>> action) {
+        public boolean tryAdvance(Consumer<? super Entry<K,V>> action) {
             if (action == null) throw new NullPointerException();
             Node<K,V> p;
             if ((p = advance()) == null)
@@ -4339,7 +4377,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @since 1.8
      */
     public void forEachEntry(long parallelismThreshold,
-                             Consumer<? super Map.Entry<K,V>> action) {
+                             Consumer<? super Entry<K,V>> action) {
         if (action == null) throw new NullPointerException();
         new ForEachEntryTask<K,V>(null, batchFor(parallelismThreshold), 0, 0, table,
                 action).invoke();
@@ -4359,7 +4397,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @since 1.8
      */
     public <U> void forEachEntry(long parallelismThreshold,
-                                 Function<Map.Entry<K,V>, ? extends U> transformer,
+                                 Function<Entry<K,V>, ? extends U> transformer,
                                  Consumer<? super U> action) {
         if (transformer == null || action == null)
             throw new NullPointerException();
@@ -4385,7 +4423,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @since 1.8
      */
     public <U> U searchEntries(long parallelismThreshold,
-                               Function<Map.Entry<K,V>, ? extends U> searchFunction) {
+                               Function<Entry<K,V>, ? extends U> searchFunction) {
         if (searchFunction == null) throw new NullPointerException();
         return new SearchEntriesTask<K,V,U>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -4402,8 +4440,8 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @return the result of accumulating all entries
      * @since 1.8
      */
-    public Map.Entry<K,V> reduceEntries(long parallelismThreshold,
-                                        BiFunction<Map.Entry<K,V>, Map.Entry<K,V>, ? extends Map.Entry<K,V>> reducer) {
+    public Entry<K,V> reduceEntries(long parallelismThreshold,
+                                        BiFunction<Entry<K,V>, Entry<K,V>, ? extends Entry<K,V>> reducer) {
         if (reducer == null) throw new NullPointerException();
         return new ReduceEntriesTask<K,V>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -4427,7 +4465,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @since 1.8
      */
     public <U> U reduceEntries(long parallelismThreshold,
-                               Function<Map.Entry<K,V>, ? extends U> transformer,
+                               Function<Entry<K,V>, ? extends U> transformer,
                                BiFunction<? super U, ? super U, ? extends U> reducer) {
         if (transformer == null || reducer == null)
             throw new NullPointerException();
@@ -4452,7 +4490,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @since 1.8
      */
     public double reduceEntriesToDouble(long parallelismThreshold,
-                                        ToDoubleFunction<Map.Entry<K,V>> transformer,
+                                        ToDoubleFunction<Entry<K,V>> transformer,
                                         double basis,
                                         DoubleBinaryOperator reducer) {
         if (transformer == null || reducer == null)
@@ -4478,7 +4516,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @since 1.8
      */
     public long reduceEntriesToLong(long parallelismThreshold,
-                                    ToLongFunction<Map.Entry<K,V>> transformer,
+                                    ToLongFunction<Entry<K,V>> transformer,
                                     long basis,
                                     LongBinaryOperator reducer) {
         if (transformer == null || reducer == null)
@@ -4504,7 +4542,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @since 1.8
      */
     public int reduceEntriesToInt(long parallelismThreshold,
-                                  ToIntFunction<Map.Entry<K,V>> transformer,
+                                  ToIntFunction<Entry<K,V>> transformer,
                                   int basis,
                                   IntBinaryOperator reducer) {
         if (transformer == null || reducer == null)
@@ -4521,7 +4559,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * Base class for views.
      */
     abstract static class CollectionView<K,V,E>
-            implements Collection<E>, java.io.Serializable {
+            implements Collection<E>, Serializable {
         private static final long serialVersionUID = 7249069246763182397L;
         final ConcurrentHashMap<K,V> map;
         CollectionView(ConcurrentHashMap<K,V> map)  { this.map = map; }
@@ -4694,7 +4732,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @since 1.8
      */
     public static class KeySetView<K,V> extends CollectionView<K,V,K>
-            implements Set<K>, java.io.Serializable {
+            implements Set<K>, Serializable {
         private static final long serialVersionUID = 7249069246763182397L;
         private final V value;
         KeySetView(ConcurrentHashMap<K,V> map, V value) {  // non-public
@@ -4817,7 +4855,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * directly instantiated. See {@link #values()}.
      */
     static final class ValuesView<K,V> extends CollectionView<K,V,V>
-            implements Collection<V>, java.io.Serializable {
+            implements Collection<V>, Serializable {
         private static final long serialVersionUID = 2249069246763182397L;
         ValuesView(ConcurrentHashMap<K,V> map) { super(map); }
         public final boolean contains(Object o) {
@@ -4890,24 +4928,24 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * entries.  This class cannot be directly instantiated. See
      * {@link #entrySet()}.
      */
-    static final class EntrySetView<K,V> extends CollectionView<K,V,Map.Entry<K,V>>
-            implements Set<Map.Entry<K,V>>, java.io.Serializable {
+    static final class EntrySetView<K,V> extends CollectionView<K,V, Entry<K,V>>
+            implements Set<Entry<K,V>>, Serializable {
         private static final long serialVersionUID = 2249069246763182397L;
         EntrySetView(ConcurrentHashMap<K,V> map) { super(map); }
 
         public boolean contains(Object o) {
-            Object k, v, r; Map.Entry<?,?> e;
+            Object k, v, r; Entry<?,?> e;
             return ((o instanceof Map.Entry) &&
-                    (k = (e = (Map.Entry<?,?>)o).getKey()) != null &&
+                    (k = (e = (Entry<?,?>)o).getKey()) != null &&
                     (r = map.get(k)) != null &&
                     (v = e.getValue()) != null &&
                     (v == r || v.equals(r)));
         }
 
         public boolean remove(Object o) {
-            Object k, v; Map.Entry<?,?> e;
+            Object k, v; Entry<?,?> e;
             return ((o instanceof Map.Entry) &&
-                    (k = (e = (Map.Entry<?,?>)o).getKey()) != null &&
+                    (k = (e = (Entry<?,?>)o).getKey()) != null &&
                     (v = e.getValue()) != null &&
                     map.remove(k, v));
         }
@@ -4915,7 +4953,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         /**
          * @return an iterator over the entries of the backing map
          */
-        public Iterator<Map.Entry<K,V>> iterator() {
+        public Iterator<Entry<K,V>> iterator() {
             ConcurrentHashMap<K,V> m = map;
             Node<K,V>[] t;
             int f = (t = m.table) == null ? 0 : t.length;
@@ -4958,7 +4996,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                             (containsAll(c) && c.containsAll(this))));
         }
 
-        public Spliterator<Map.Entry<K,V>> spliterator() {
+        public Spliterator<Entry<K,V>> spliterator() {
             Node<K,V>[] t;
             ConcurrentHashMap<K,V> m = map;
             long n = m.sumCount();
@@ -4966,7 +5004,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
             return new EntrySpliterator<K,V>(t, f, 0, f, n < 0L ? 0L : n, m);
         }
 
-        public void forEach(Consumer<? super Map.Entry<K,V>> action) {
+        public void forEach(Consumer<? super Entry<K,V>> action) {
             if (action == null) throw new NullPointerException();
             Node<K,V>[] t;
             if ((t = map.table) != null) {
@@ -5256,16 +5294,16 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     @SuppressWarnings("serial")
     static final class ForEachTransformedEntryTask<K,V,U>
             extends BulkTask<K,V,Void> {
-        final Function<Map.Entry<K,V>, ? extends U> transformer;
+        final Function<Entry<K,V>, ? extends U> transformer;
         final Consumer<? super U> action;
         ForEachTransformedEntryTask
                 (BulkTask<K,V,?> p, int b, int i, int f, Node<K,V>[] t,
-                 Function<Map.Entry<K,V>, ? extends U> transformer, Consumer<? super U> action) {
+                 Function<Entry<K,V>, ? extends U> transformer, Consumer<? super U> action) {
             super(p, b, i, f, t);
             this.transformer = transformer; this.action = action;
         }
         public final void compute() {
-            final Function<Map.Entry<K,V>, ? extends U> transformer;
+            final Function<Entry<K,V>, ? extends U> transformer;
             final Consumer<? super U> action;
             if ((transformer = this.transformer) != null &&
                     (action = this.action) != null) {
@@ -5594,20 +5632,20 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
 
     @SuppressWarnings("serial")
     static final class ReduceEntriesTask<K,V>
-            extends BulkTask<K,V,Map.Entry<K,V>> {
-        final BiFunction<Map.Entry<K,V>, Map.Entry<K,V>, ? extends Map.Entry<K,V>> reducer;
-        Map.Entry<K,V> result;
+            extends BulkTask<K,V, Entry<K,V>> {
+        final BiFunction<Entry<K,V>, Entry<K,V>, ? extends Entry<K,V>> reducer;
+        Entry<K,V> result;
         ReduceEntriesTask<K,V> rights, nextRight;
         ReduceEntriesTask
                 (BulkTask<K,V,?> p, int b, int i, int f, Node<K,V>[] t,
                  ReduceEntriesTask<K,V> nextRight,
-                 BiFunction<Entry<K,V>, Map.Entry<K,V>, ? extends Map.Entry<K,V>> reducer) {
+                 BiFunction<Entry<K,V>, Entry<K,V>, ? extends Entry<K,V>> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.reducer = reducer;
         }
-        public final Map.Entry<K,V> getRawResult() { return result; }
+        public final Entry<K,V> getRawResult() { return result; }
         public final void compute() {
-            final BiFunction<Map.Entry<K,V>, Map.Entry<K,V>, ? extends Map.Entry<K,V>> reducer;
+            final BiFunction<Entry<K,V>, Entry<K,V>, ? extends Entry<K,V>> reducer;
             if ((reducer = this.reducer) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
@@ -5616,7 +5654,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, reducer)).fork();
                 }
-                Map.Entry<K,V> r = null;
+                Entry<K,V> r = null;
                 for (Node<K,V> p; (p = advance()) != null; )
                     r = (r == null) ? p : reducer.apply(r, p);
                 result = r;
@@ -5627,7 +5665,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                             t = (ReduceEntriesTask<K,V>)c,
                             s = t.rights;
                     while (s != null) {
-                        Map.Entry<K,V> tr, sr;
+                        Entry<K,V> tr, sr;
                         if ((sr = s.result) != null)
                             t.result = (((tr = t.result) == null) ? sr :
                                     reducer.apply(tr, sr));
@@ -5749,14 +5787,14 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesTask<K,V,U>
             extends BulkTask<K,V,U> {
-        final Function<Map.Entry<K,V>, ? extends U> transformer;
+        final Function<Entry<K,V>, ? extends U> transformer;
         final BiFunction<? super U, ? super U, ? extends U> reducer;
         U result;
         MapReduceEntriesTask<K,V,U> rights, nextRight;
         MapReduceEntriesTask
                 (BulkTask<K,V,?> p, int b, int i, int f, Node<K,V>[] t,
                  MapReduceEntriesTask<K,V,U> nextRight,
-                 Function<Map.Entry<K,V>, ? extends U> transformer,
+                 Function<Entry<K,V>, ? extends U> transformer,
                  BiFunction<? super U, ? super U, ? extends U> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.transformer = transformer;
@@ -5764,7 +5802,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         }
         public final U getRawResult() { return result; }
         public final void compute() {
-            final Function<Map.Entry<K,V>, ? extends U> transformer;
+            final Function<Entry<K,V>, ? extends U> transformer;
             final BiFunction<? super U, ? super U, ? extends U> reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5957,7 +5995,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesToDoubleTask<K,V>
             extends BulkTask<K,V,Double> {
-        final ToDoubleFunction<Map.Entry<K,V>> transformer;
+        final ToDoubleFunction<Entry<K,V>> transformer;
         final DoubleBinaryOperator reducer;
         final double basis;
         double result;
@@ -5965,7 +6003,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         MapReduceEntriesToDoubleTask
                 (BulkTask<K,V,?> p, int b, int i, int f, Node<K,V>[] t,
                  MapReduceEntriesToDoubleTask<K,V> nextRight,
-                 ToDoubleFunction<Map.Entry<K,V>> transformer,
+                 ToDoubleFunction<Entry<K,V>> transformer,
                  double basis,
                  DoubleBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5974,7 +6012,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         }
         public final Double getRawResult() { return result; }
         public final void compute() {
-            final ToDoubleFunction<Map.Entry<K,V>> transformer;
+            final ToDoubleFunction<Entry<K,V>> transformer;
             final DoubleBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -6157,7 +6195,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesToLongTask<K,V>
             extends BulkTask<K,V,Long> {
-        final ToLongFunction<Map.Entry<K,V>> transformer;
+        final ToLongFunction<Entry<K,V>> transformer;
         final LongBinaryOperator reducer;
         final long basis;
         long result;
@@ -6165,7 +6203,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         MapReduceEntriesToLongTask
                 (BulkTask<K,V,?> p, int b, int i, int f, Node<K,V>[] t,
                  MapReduceEntriesToLongTask<K,V> nextRight,
-                 ToLongFunction<Map.Entry<K,V>> transformer,
+                 ToLongFunction<Entry<K,V>> transformer,
                  long basis,
                  LongBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -6174,7 +6212,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         }
         public final Long getRawResult() { return result; }
         public final void compute() {
-            final ToLongFunction<Map.Entry<K,V>> transformer;
+            final ToLongFunction<Entry<K,V>> transformer;
             final LongBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -6357,7 +6395,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesToIntTask<K,V>
             extends BulkTask<K,V,Integer> {
-        final ToIntFunction<Map.Entry<K,V>> transformer;
+        final ToIntFunction<Entry<K,V>> transformer;
         final IntBinaryOperator reducer;
         final int basis;
         int result;
@@ -6365,7 +6403,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         MapReduceEntriesToIntTask
                 (BulkTask<K,V,?> p, int b, int i, int f, Node<K,V>[] t,
                  MapReduceEntriesToIntTask<K,V> nextRight,
-                 ToIntFunction<Map.Entry<K,V>> transformer,
+                 ToIntFunction<Entry<K,V>> transformer,
                  int basis,
                  IntBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -6374,7 +6412,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         }
         public final Integer getRawResult() { return result; }
         public final void compute() {
-            final ToIntFunction<Map.Entry<K,V>> transformer;
+            final ToIntFunction<Entry<K,V>> transformer;
             final IntBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
