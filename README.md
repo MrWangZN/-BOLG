@@ -1,4 +1,4 @@
-# Bolg------ByWZN
+# Bolg---WZN
 记录学习博客，只是在于积累<br/>
 记录在Issues<br/>
 #<a href="https://github.com/MrWangZN/Bolg------ByWZN/issues/1">JDK8 ---->HashMap</a> <br/>
