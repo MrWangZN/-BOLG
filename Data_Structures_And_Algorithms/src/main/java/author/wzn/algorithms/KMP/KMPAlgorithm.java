@@ -51,9 +51,7 @@ public class KMPAlgorithm {
         if (length > 0) {
             next[i++] = 0;
             while (i < length) {
-
                 while (j > 0 && str.charAt(i) != str.charAt(j)){
-
                     j = next[j - 1];
                 }
                 if (str.charAt(i) == str.charAt(j)) {
