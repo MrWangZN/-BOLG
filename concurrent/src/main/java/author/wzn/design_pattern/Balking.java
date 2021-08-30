@@ -1,7 +1,7 @@
 package author.wzn.design_pattern;
 
 /*
- * @Author: 王振南
+ *
  * @Date: 2021/8/10
  * @Description: 多线程设计模式 - 犹豫模式 : 实际做一件事情之前,犹豫一下，别人在做我就不做了
  *               场景: 监控,定时器,对象的单例

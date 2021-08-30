@@ -10,6 +10,11 @@ import java.util.List;
 *
 * 如: 本例子中,一个人想要看外国电影,但是不懂外国的外语,那么就要将这个电影处理翻译一下,可以是翻译字幕，可以是配音这不是我们的重点
 *     我们的重点是要让Viewer能够看得懂。
+*
+*
+* 例子:  spring MVC中，不同的handle有不同的适配器，如果请求是实现Controller接口、使用Controller注解等就使用相应的注解
+*       为的是保证其功能不变但是能够正常运行。原本的是不能在一起工作的。
+*
 */
 public class AdapterPatter {
 
