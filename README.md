@@ -39,4 +39,4 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;☆<a href="https://github.com/MrWangZN/-BOLG/blob/main/concurrent/src/main/java/author/wzn/lock/synchonize/synchronized%E5%8E%9F%E7%90%86.md">synchronized原理</a> <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;☆<a href="https://github.com/MrWangZN/-BOLG/blob/main/concurrent/src/main/java/author/wzn/lock/synchonize/%E6%9C%89%E4%BA%86synchronized%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E9%9C%80%E8%A6%81Lock%EF%BC%9F.md">有了synchronized为什么还要有Lock?</a> <br/>
 #<a href="https://github.com/MrWangZN/-BOLG/tree/main/Data_Structures_And_Algorithms/src/main/java/author/wzn/algorithms/practice/leetCode">LeetCode做题练习</a><br/>
-#<a href="https://github.com/MrWangZN/-BOLG/tree/main/Data_Structures_And_Algorithms/src/main/java/author/wzn/algorithms/practice/offer">剑指Offer</a><br/>
+#<a href="https://github.com/MrWangZN/-BOLG/tree/main/Data_Structures_And_Algorithms/src/main/java/author/wzn/algorithms/practice/offer">剑指Offer做题练习</a><br/>
